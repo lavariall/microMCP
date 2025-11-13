@@ -1,0 +1,46 @@
+name: Publish to PyPI
+
+on:
+  # Löst den Workflow aus, wenn ein neuer Tag (z.B. v0.1.1) gepusht wird.
+  push:
+    tags:
+      - 'v[0-9]+.*' # Matcht alle Tags, die mit v und einer Zahl beginnen
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    # Hier definierst du, dass du Zugriff auf das Secret brauchst.
+    environment: production # Gut für die Übersicht, falls du Environments nutzt
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          # Brauchen wir, um Tags für den Build zu lesen (optional, aber gut)
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      # Installiere die Build-Tools (genau wie du es lokal gemacht hast)
+      - name: Install build dependencies
+        run: pip install build twine
+
+      # Führe den lokalen Build aus (erstellt den dist/-Ordner)
+      - name: Build sdist and wheel
+        run: python -m build
+
+      # *** HIER PASSIERT DER UPLOAD ***
+      - name: Publish package to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          # Verwendet das Secret von GitHub, um sich bei PyPI zu authentifizieren
+          password: ${{ secrets.PYPI_API_TOKEN }}
+          # Der Username ist immer __token__
+          username: __token__
+
+      - name: Clean up dist directory
+        run: rm -rf dist
