@@ -9,8 +9,9 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write    # Hier definierst du, dass du Zugriff auf das Secret brauchst.
 
-    # Hier definierst du, dass du Zugriff auf das Secret brauchst.
     environment: production # Gut für die Übersicht, falls du Environments nutzt
 
     steps:
@@ -36,11 +37,6 @@ jobs:
       # *** HIER PASSIERT DER UPLOAD ***
       - name: Publish package to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
-        with:
-          # Verwendet das Secret von GitHub, um sich bei PyPI zu authentifizieren
-          password: ${{ secrets.PYPI_API_TOKEN }}
-          # Der Username ist immer __token__
-          username: __token__
 
       - name: Clean up dist directory
         run: rm -rf dist
