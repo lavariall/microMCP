@@ -73,24 +73,46 @@ if __name__ == "__main__":
 
 Getestet für die Verbindung mit einem Standard fastmcp Python-Client.
 ```python
+# coding:utf-8
+"""Simple test script to test micromcp compatibility with fastmcp"""
 # client.py (auf deinem Laptop)
 import asyncio
 from fastmcp import Client
+from fastmcp.client.transports import StreamableHttpTransport
+
+TOKEN = "token"
 
 async def main():
-    # Stelle sicher, dass die IP-Adresse korrekt ist
-    async with Client("ws://192.168.0.88:8080") as client:
+    # Übergib die 'Host:Port'-Adresse und die Transport-Klasse
+    transport = StreamableHttpTransport(
+        url="http://192.168.0.219:8080/mcp",
+        headers={
+            "Authorization": f"Bearer {TOKEN}",
+            "X-Custom-Header": "value"
+        }
+    )
+    async with Client(transport=transport) as client:
+
+        print("Warte auf client.list_tools()...")
         tools = await client.list_tools()
         print(f"Verfügbare Tools: {tools}")
-        
+
+        resources = await client.list_resources()
+        print(f"Verfügbare Ressourcen: {resources}")
+
         result = await client.call_tool("add", {"a": 5, "b": 3})
         print(f"Ergebnis von add(5, 3): {result.content}")
 
         result_uptime = await client.call_tool("get_system_uptime", {})
         print(f"ESP32 Uptime: {result_uptime.content}")
 
+        version = await client.read_resource("config://version")
+        print(f"ESP32 version: {version}")
+
+
 if __name__ == "__main__":
     asyncio.run(main())
+
 
 ```
 
