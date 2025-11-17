@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 # Der Name, der auf PyPI verwendet wird (muss eindeutig sein)
 name = "micromcp"
-version = "0.1.0"
+version = "1.0.0"
 authors = [
   {name="lavariall"},
 ]
