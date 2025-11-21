@@ -1,24 +1,22 @@
 name: Publish to PyPI
 
 on:
-  # Löst den Workflow aus, wenn ein neuer Tag (z.B. v0.1.1) gepusht wird.
   push:
     tags:
-      - 'v[0-9]+.*' # Matcht alle Tags, die mit v und einer Zahl beginnen
+      - 'v[0-9]+.*'
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
     permissions:
-      id-token: write    # Hier definierst du, dass du Zugriff auf das Secret brauchst.
+      id-token: write
 
-    environment: production # Gut für die Übersicht, falls du Environments nutzt
+    environment: production
 
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
         with:
-          # Brauchen wir, um Tags für den Build zu lesen (optional, aber gut)
           fetch-depth: 0
 
       - name: Set up Python
@@ -26,15 +24,21 @@ jobs:
         with:
           python-version: '3.x'
 
-      # Installiere die Build-Tools (genau wie du es lokal gemacht hast)
       - name: Install build dependencies
         run: pip install build twine
 
-      # Führe den lokalen Build aus (erstellt den dist/-Ordner)
+      - name: Update version from Tag
+        run: |
+          # Holt den Tag-Namen (z.B. v1.0.1) und schneidet das 'v' ab -> 1.0.1
+          VERSION=${GITHUB_REF_NAME#v}
+          echo "Setze Version in pyproject.toml auf: $VERSION"
+          
+          # Ersetzt die Zeile 'version = "..."' durch die Tag-Version
+          sed -i "s/version = \".*\"/version = \"$VERSION\"/" pyproject.toml
+
       - name: Build sdist and wheel
         run: python -m build
 
-      # *** HIER PASSIERT DER UPLOAD ***
       - name: Publish package to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
 
